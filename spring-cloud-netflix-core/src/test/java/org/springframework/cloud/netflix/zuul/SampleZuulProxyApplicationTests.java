@@ -16,10 +16,11 @@
 
 package org.springframework.cloud.netflix.zuul;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-
+import com.netflix.appinfo.EurekaInstanceConfig;
+import com.netflix.loadbalancer.BaseLoadBalancer;
+import com.netflix.loadbalancer.ILoadBalancer;
+import com.netflix.loadbalancer.Server;
+import com.netflix.zuul.ZuulFilter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,17 +43,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.netflix.appinfo.EurekaInstanceConfig;
-import com.netflix.loadbalancer.BaseLoadBalancer;
-import com.netflix.loadbalancer.ILoadBalancer;
-import com.netflix.loadbalancer.Server;
-import com.netflix.zuul.ZuulFilter;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = SampleZuulProxyApplication.class)
@@ -105,7 +100,7 @@ public class SampleZuulProxyApplicationTests {
 
 	@Test
 	public void stripPrefixFalseAppendsPath() {
-		this.routes.addRoute(new ZuulRoute("strip", "/strip/**", "strip",
+		this.routes.addRoute(new ZuulRoute("strip", "/strip/**", "strip", null,
 				"http://localhost:" + this.port + "/local", false, false));
 		this.endpoint.reset();
 		ResponseEntity<String> result = new TestRestTemplate().exchange(

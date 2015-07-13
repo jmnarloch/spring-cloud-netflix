@@ -16,10 +16,6 @@
 
 package org.springframework.cloud.netflix.zuul.filters;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -28,11 +24,11 @@ import org.springframework.cloud.netflix.zuul.filters.ProxyRouteLocator.ProxyRou
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties.ZuulRoute;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -103,7 +99,7 @@ public class ProxyRouteLocatorTests {
 		ProxyRouteLocator routeLocator = new ProxyRouteLocator("/", this.discovery,
 				this.properties);
 		this.properties.getRoutes().put("foo",
-				new ZuulRoute("foo", "/foo/**", "foo", null, false, null));
+				new ZuulRoute("foo", "/foo/**", "foo", null, null, false, null));
 		this.properties.setStripPrefix(false);
 		this.properties.setPrefix("/proxy");
 		routeLocator.getRoutes(); // force refresh
@@ -130,7 +126,7 @@ public class ProxyRouteLocatorTests {
 		ProxyRouteLocator routeLocator = new ProxyRouteLocator("/", this.discovery,
 				this.properties);
 		this.properties.getRoutes().put("foo",
-				new ZuulRoute("foo", "/foo/**", "foo", null, false, null));
+				new ZuulRoute("foo", "/foo/**", "foo", null, null, false, null));
 		this.properties.setPrefix("/proxy");
 		routeLocator.getRoutes(); // force refresh
 		ProxyRouteSpec route = routeLocator.getMatchingRoute("/proxy/foo/1");

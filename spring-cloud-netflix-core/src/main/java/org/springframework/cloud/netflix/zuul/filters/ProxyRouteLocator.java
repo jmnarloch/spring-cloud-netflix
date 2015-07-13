@@ -16,23 +16,22 @@
 
 package org.springframework.cloud.netflix.zuul.filters;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicReference;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.apachecommons.CommonsLog;
-
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties.ZuulRoute;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StringUtils;
+
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Spencer Gibb
@@ -116,15 +115,24 @@ public class ProxyRouteLocator implements RouteLocator {
 				id = route.getId();
 				location = route.getLocation();
 				targetPath = path;
-				if (path.startsWith(prefix) && this.properties.isStripPrefix()) {
-					targetPath = path.substring(prefix.length());
-				}
-				if (route.isStripPrefix()) {
-					int index = route.getPath().indexOf("*") - 1;
-					if (index > 0) {
-						String routePrefix = route.getPath().substring(0, index);
-						targetPath = targetPath.replaceFirst(routePrefix, "");
-						prefix = prefix + routePrefix;
+				if(StringUtils.hasText(route.getServicePath())) {
+					String routePrefix = route.getPath();
+					final int index = route.getPath().indexOf("*") - 1;
+					if(index > 0) {
+						routePrefix = route.getPath().substring(0, index);
+					}
+					targetPath = targetPath.replaceFirst(routePrefix, route.getServicePath());
+				} else {
+					if (path.startsWith(prefix) && this.properties.isStripPrefix()) {
+						targetPath = path.substring(prefix.length());
+					}
+					if (route.isStripPrefix()) {
+						int index = route.getPath().indexOf("*") - 1;
+						if (index > 0) {
+							String routePrefix = route.getPath().substring(0, index);
+							targetPath = targetPath.replaceFirst(routePrefix, "");
+							prefix = prefix + routePrefix;
+						}
 					}
 				}
 				if (route.getRetryable() != null) {

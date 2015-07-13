@@ -71,7 +71,7 @@ public class ServletPathZuulProxyApplicationTests {
 
 	@Test
 	public void stripPrefixFalseAppendsPath() {
-		this.routes.addRoute(new ZuulRoute("strip", "/strip/**", "strip",
+		this.routes.addRoute(new ZuulRoute("strip", "/strip/**", "strip", null,
 				"http://localhost:" + this.port + "/app/local", false, false));
 		this.endpoint.reset();
 		ResponseEntity<String> result = new TestRestTemplate().exchange(

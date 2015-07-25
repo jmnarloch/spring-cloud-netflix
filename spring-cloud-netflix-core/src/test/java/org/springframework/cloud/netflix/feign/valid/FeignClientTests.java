@@ -73,6 +73,9 @@ public class FeignClientTests {
 	@Autowired
 	private TestClient testClient;
 
+	@Autowired
+	private TestClientServiceId testClientServiceId;
+
 	// @FeignClient(value = "http://localhost:9876", loadbalance = false)
 	@FeignClient("localapp")
 	protected static interface TestClient {
@@ -87,6 +90,12 @@ public class FeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/helloheaders")
 		public List<String> getHelloHeaders();
+	}
+
+	@FeignClient(serviceId = "localapp")
+	protected static interface TestClientServiceId {
+		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		public Hello getHello();
 	}
 
 	@Configuration
@@ -189,6 +198,14 @@ public class FeignClientTests {
 				headers.contains("myheader1value"));
 		assertTrue("headers didn't contain myheader2value",
 				headers.contains("myheader2value"));
+	}
+
+	@Test
+	public void testServiceId() {
+		assertNotNull("testClientServiceId was null", testClientServiceId);
+		final Hello hello = testClientServiceId.getHello();
+		assertNotNull("The hello response was null", hello);
+		assertEquals("first hello didn't match", new Hello("hello world 1"), hello);
 	}
 
 	@Data

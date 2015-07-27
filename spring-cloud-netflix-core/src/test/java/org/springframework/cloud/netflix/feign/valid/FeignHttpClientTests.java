@@ -16,21 +16,13 @@
 
 package org.springframework.cloud.netflix.feign.valid;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-import java.lang.reflect.Field;
-import java.util.Arrays;
-
+import com.netflix.loadbalancer.BaseLoadBalancer;
+import com.netflix.loadbalancer.ILoadBalancer;
+import com.netflix.loadbalancer.Server;
+import feign.Client;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,15 +41,16 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.netflix.loadbalancer.BaseLoadBalancer;
-import com.netflix.loadbalancer.ILoadBalancer;
-import com.netflix.loadbalancer.Server;
+import java.lang.reflect.Field;
+import java.util.Arrays;
 
-import feign.Client;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * @author Spencer Gibb
@@ -88,12 +81,33 @@ public class FeignHttpClientTests {
 		public ResponseEntity<Void> patchHello();
 	}
 
+	protected interface CrudClient<T> {
+
+		@RequestMapping(method = RequestMethod.POST, value = "/users/")
+		long save(T entity);
+
+		@RequestMapping(method = RequestMethod.PUT, value = "/users/{id}")
+		void update(@PathVariable("id") long id, T entity);
+
+		@RequestMapping(method = RequestMethod.GET, value = "/users/{id}")
+		T get(@PathVariable("id") long id);
+
+		@RequestMapping(method = RequestMethod.DELETE, value = "/users/{id}")
+		void delete(@PathVariable("id") long id);
+	}
+
+	@FeignClient("localapp")
+	@RequestMapping(value = "/")
+	protected interface UserClient extends CrudClient<User> {
+
+	}
+
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients
 	@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
-	protected static class Application {
+	protected static class Application implements CrudClient {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		public Hello getHello() {
@@ -109,6 +123,26 @@ public class FeignHttpClientTests {
 			new SpringApplicationBuilder(Application.class).properties(
 					"spring.application.name=feignclienttest",
 					"management.contextPath=/admin").run(args);
+		}
+
+		@Override
+		public long save(Object entity) {
+			return 0;
+		}
+
+		@Override
+		public void update(@PathVariable("id") long id, Object entity) {
+
+		}
+
+		@Override
+		public Object get(@PathVariable("id") long id) {
+			return null;
+		}
+
+		@Override
+		public void delete(@PathVariable("id") long id) {
+
 		}
 	}
 
@@ -141,6 +175,13 @@ public class FeignHttpClientTests {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	public static class Hello {
+		private String message;
+	}
+
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class User {
 		private String message;
 	}
 
